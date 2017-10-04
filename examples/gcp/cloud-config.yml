@@ -1,0 +1,49 @@
+azs:
+- name: z1
+  cloud_properties:
+    zone: us-east1-b
+- name: z2
+  cloud_properties:
+    zone: us-east1-c
+- name: mysql_z1
+  cloud_properties:
+    zone: us-east1-b
+compilation:
+  az: z1
+  network: default
+  reuse_compilation_vms: true
+  vm_extensions:
+  - 100GB_ephemeral_disk
+  vm_type: m3.medium
+  workers: 2
+disk_types:
+- name: 50GB
+  disk_size: 51200
+  cloud_properties:
+    encrypted: true
+    type: pd-standard
+networks:
+- name: default
+  type: manual
+  subnets:
+  - reserved:
+    - 10.0.0.6
+  - range: 10.0.0.0/24
+    gateway: 10.0.0.1
+    dns: [8.8.8.8, 8.8.4.4]
+    azs: [z1, z2]
+    cloud_properties:
+      network_name: bosh-vpc
+      ephemeral_external_ip: true
+      tags: [internal, concourse]
+vm_types:
+- name: t2.small
+  cloud_properties:
+    machine_type: n1-standard-2
+    root_disk_size_gb: 50
+    root_disk_type: pd-standard
+- name: m3.medium
+  cloud_properties:
+    machine_type: n1-standard-8
+    root_disk_size_gb: 50
+    root_disk_type: pd-standard

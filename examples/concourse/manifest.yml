@@ -1,0 +1,122 @@
+---
+name: concourse
+
+releases:
+- name: concourse
+  version: latest
+- name: garden-runc
+  version: latest
+
+stemcells:
+- alias: trusty
+  os: ubuntu-trusty
+  version: latest
+
+instance_groups:
+- name: web
+  instances: 1
+  # replace with a VM type from your BOSH Director's cloud config
+  vm_type: m3.medium
+  vm_extensions:
+  # replace with a VM extension from your BOSH Director's cloud config that will attach
+  # this instance group to your ELB
+  - 50GB_ephemeral_disk
+  stemcell: trusty
+  azs: [z1]
+  networks:
+  - name: private
+  jobs:
+  - name: atc
+    release: concourse
+    properties:
+
+      # replace with username/password, or configure GitHub auth
+      basic_auth_username: admin
+      basic_auth_password: password
+
+      # replace with your SSL cert and key
+      tls_cert: |
+        -----BEGIN CERTIFICATE-----
+        MIIB+TCCAWICCQD6GA8XIY3PXDANBgkqhkiG9w0BAQUFADBBMQswCQYDVQQGEwJD
+        SDENMAsGA1UECBMEVmF1ZDEPMA0GA1UEBxMGTGV5c2luMRIwEAYDVQQKEwlhcGVy
+        b2xhYnMwHhcNMTcxMDA1MDIyNzQ4WhcNMTgxMDA1MDIyNzQ4WjBBMQswCQYDVQQG
+        EwJDSDENMAsGA1UECBMEVmF1ZDEPMA0GA1UEBxMGTGV5c2luMRIwEAYDVQQKEwlh
+        cGVyb2xhYnMwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAPMSoWwFN/yZoBJG
+        VXOW/p4vnDBBVOwMl8sVpJdHRiJihDZZDlCNjiw/QoB0CWpWJ+OI0AjXRO6KZ5uM
+        9qvsvDTSRLm496hCiycdxMgEMIgvQCbm28P/ROuhGpawi1mFkfMnWwv1ozeFP/0u
+        8sGzWMXuWBHV8xr0n4Xf23iLe5OJAgMBAAEwDQYJKoZIhvcNAQEFBQADgYEAx2g2
+        +FWoKV+N2t/AqrGQs0dVKs6XKfZYktBaLaHfUkxpNrLlN3/zpn0y+eq6zd4QYA1P
+        50Ek9dPwBIYvqRS+xejyU/WlM/cxvOETZDzuk20fcfLSCoDcteVML5MfqVWHH3wx
+        4wvf+Uib6uuY/NsogE5AGhtv/0v2ZfSwJfegZrk=
+        -----END CERTIFICATE-----
+      tls_key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIICXQIBAAKBgQDzEqFsBTf8maASRlVzlv6eL5wwQVTsDJfLFaSXR0YiYoQ2WQ5Q
+        jY4sP0KAdAlqVifjiNAI10TuimebjPar7Lw00kS5uPeoQosnHcTIBDCIL0Am5tvD
+        /0TroRqWsItZhZHzJ1sL9aM3hT/9LvLBs1jF7lgR1fMa9J+F39t4i3uTiQIDAQAB
+        AoGACOXSsOCUBxQcju6yLBQH6AR4JDAQCr//QnjdWIhMYe/XRSIHax1zad068vbM
+        bW8P8L1OWDSBGnZIiqIjWXHGBdq0EjVZrZTyriocMqDGhcNglALrFG58wZMyvzjb
+        uNPi0vaGW99wQFM7s5ik0UU07AKru+sB3P4z2wTfMU+iuz0CQQD/PoAuVcjlekwb
+        wq55OGoxpySb6lL2nKorVpp+Xf7Az4bPWXs9NNU1/07IIUpkZb47FFSFdtqOzdUR
+        h/CSCUFbAkEA88rnHZXtmJUqUQrgxn954S0VIK0Am0IgYmqfgZOCuGsK/Gni6N1j
+        idWPvRp3Mvhy/Qd92U/3Znm8rhOyyKzP6wJBAObyBETodae86lRL6FXiR6O5mhRB
+        BuQAiLBB4fPo1HJc05uVWT7eKPR8lynZhVgl/uOx13ATRFnlv53nJDLekPUCQDHI
+        om95OV6qP0zzYrlGONZRxXm5umD6HPDcAxyLyers+P5YhRy2cOgps0OTjvnaoGip
+        SfrBiKzleTE3FpBCMecCQQCquwSV/zxmwfYwDUsSk5k2ohSet2IANBEHO+vs95PE
+        eMzJjCKPnZsgHfKJGptWVEilmP8J4cdoPSbga/NqGobS
+        -----END RSA PRIVATE KEY-----
+      postgresql_database: &atc_db atc
+  - name: tsa
+    release: concourse
+    properties: {}
+
+- name: db
+  instances: 1
+  # replace with a VM type from your BOSH Director's cloud config
+  vm_type: m3.medium
+  stemcell: trusty
+  # replace with a disk type from your BOSH Director's cloud config
+  persistent_disk_type: 50GB
+  azs: [z1]
+  networks: [{name: private}]
+  jobs:
+  - name: postgresql
+    release: concourse
+    properties:
+      databases:
+      - name: *atc_db
+        # make up a role and password
+        role: admin
+        password: password
+
+- name: worker
+  instances: 1
+  # replace with a VM type from your BOSH Director's cloud config
+  vm_type: m3.medium
+  vm_extensions:
+  # replace with a VM extension from your BOSH Director's cloud config that will attach
+  # sufficient ephemeral storage to VMs in this instance group.
+  - 50GB_ephemeral_disk
+  stemcell: trusty
+  azs: [z1]
+  networks: [{name: private}]
+  jobs:
+  - name: groundcrew
+    release: concourse
+    properties: {}
+  - name: baggageclaim
+    release: concourse
+    properties: {}
+  - name: garden
+    release: garden-runc
+    properties:
+      garden:
+        listen_network: tcp
+        listen_address: 0.0.0.0:7777
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  serial: false
+  canary_watch_time: 1000-60000
+  update_watch_time: 1000-60000

@@ -23,13 +23,12 @@ instance_groups:
   - 50GB_ephemeral_disk
   stemcell: trusty
   azs: [z1]
-  networks:
-  - name: private
+  networks: [{name: private, default: ['dns', 'gateway']}, {name: vip, static_ips: ['35.199.190.28']}]
   jobs:
   - name: atc
     release: concourse
     properties:
-
+      external_url: https://35.199.190.28
       # replace with username/password, or configure GitHub auth
       basic_auth_username: admin
       basic_auth_password: password

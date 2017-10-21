@@ -13,26 +13,7 @@
  git clone https://github.com/cloudfoundry/bosh-deployment.git
  ```
  
- 2. Follow install example for Virtual Box
- 
- 3. Create BOSH director
- ```
-  bosh create-env ~/workspace/bosh-deployment/bosh.yml \
-   --state ./state.json \
-   -o ~/workspace/bosh-deployment/virtualbox/cpi.yml \
-   -o ~/workspace/bosh-deployment/virtualbox/outbound-network.yml \
-   -o ~/workspace/bosh-deployment/bosh-lite.yml \
-   -o ~/workspace/bosh-deployment/bosh-lite-runc.yml \
-   -o ~/workspace/bosh-deployment/jumpbox-user.yml \
-   --vars-store ./creds.yml \
-   -v director_name="Bosh Lite Director" \
-   -v internal_ip=192.168.50.6 \
-   -v internal_gw=192.168.50.1 \
-   -v internal_cidr=192.168.50.0/24 \
-   -v outbound_network_name=NatNetwork
- ```
- 
- 3.1 Without Jump Box
+ 3. Create BOSH Director for GCP Without Jump Box
  
  With the usage of a Jump Box, you'll need to expose your bosh director via `external_ip` and providing an `opsfile` to
  override default settings to use an `external_ip`.  Though you don't need to use a jump box, it's recommended for 
@@ -97,14 +78,29 @@
  $ export BOSH_CLIENT_SECRET=`bosh int ./creds.yml --path /admin_password`
  ```
  
- 5. Set BOSH director URL (optional)
+ 5. Set BOSH director URL (optional).  This only saves you from having to re-type `-e ` whenever you run the `bosh` CLI.
  ```
- export BOSH_ENVIRONMENT=vbox
+ export BOSH_ENVIRONMENT=<target_environment>
  ```
  
  6. Setup Cloud Config
  ```
- bosh -e vbox update-cloud-config cloud.yml   
+ bosh -e <target_environment> update-cloud-config cloud.yml   
  ```
  
+ 7. SSL Cert and Key Generation
+ https://www.akadia.com/services/ssh_test_certificate.html
  
+ ## Concourse
+ 
+ ### Links
+ 
+ [Concourse local deployment with docker-compose](http://concourse.ci/docker-repository.html)
+ [concourse deployment example](https://github.com/concourse/concourse-deployment)
+ [Install postgresql](https://www.codementor.io/devops/tutorial/getting-started-postgresql-server-mac-osx)
+ 
+ * Install `garden-runc`
+ >> Task 10 | 04:02:20 | Error: Release 'garden-runc' doesn't exist
+ 
+ I had to download both the `concourse` and `garden-runc` releases and upload them via `bosh upload-release <release>`
+ [here](https://concourse.ci/downloads.html).

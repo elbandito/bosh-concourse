@@ -1,10 +1,13 @@
 azs:
 - name: z1
   cloud_properties:
-    zone: us-east1-b
+    zone: us-west1-b
 - name: z2
   cloud_properties:
     zone: us-east1-c
+- name: z3
+  cloud_properties:
+    zone: us-east1-b
 - name: mysql_z1
   cloud_properties:
     zone: us-east1-b
@@ -15,18 +18,8 @@ disk_types:
     encrypted: true
     type: pd-standard
 networks:
-- name: default
-  type: manual
-  subnets:
-  - range: 10.0.0.0/24
-    gateway: 10.0.0.1
-    dns: [8.8.8.8, 8.8.4.4]
-    azs: [z1, z2]
-    cloud_properties:
-      network_name: bosh-vpc
-      subnetwork_name: bosh-subnet
-      ephemeral_external_ip: true
-      tags: [internal, concourse]
+- name: vip
+  type: vip
 - name: private
   type: manual
   subnets:
@@ -68,9 +61,9 @@ vm_extensions:
       type: pd-standard
 compilation:
   az: z1
-  network: default
+  network: private
   reuse_compilation_vms: true
   vm_type: m3.medium
-  workers: 2
+  workers: 4
   vm_extensions:
   - 50GB_ephemeral_disk

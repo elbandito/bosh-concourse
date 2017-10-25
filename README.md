@@ -23,7 +23,7 @@ Once you've got all that set up, download the releases listed for your version o
 
 Next you'll need a Concourse BOSH deployment manifest. An example manifest is below; you'll want to replace the REPLACE_ME bits with whatever values are appropriate.
 
-Note that the VM types, VM extensions, persistent disk type, and network names must come from your Cloud Config. Consult Prepping the Environment if you haven't set it up yet. You can retrieve your Cloud Config by running bosh cloud-config.
+Note that the VM types, VM extensions, persistent disk type, and network names must come from your Cloud Config. Consult Prepping the Environment if you haven't set it up yet. You can retrieve your Cloud Config by running `bosh cloud-config`.
 
 ``` yaml
 ---
@@ -132,21 +132,21 @@ Once you've got a manifest, just deploy it!
 
 ### Reaching the web UI
 
-This really depends on your infrastructure. If you're deploying to AWS you may want to configure the web VM type to register with an ELB, mapping port 80 to 8080, 443 to 4443 (if you've configured TLS), and 2222 to 2222.
+This really depends on your infrastructure. If you're deploying to AWS you may want to configure the web VM type to register with an ELB, mapping port `80` to `8080`, `443` to `4443` (if you've configured TLS), and `2222` to `2222`.
 
-Otherwise you may want to configure static_ips for the web instance group and just reach the web UI directly.
+Otherwise you may want to configure `static_ips` for the `web` instance group and just reach the web UI directly.
 
 ### Upgrading & maintaining Concourse
 
 With BOSH, the deployment manifest is the source of truth. This is very similar to Concourse's own philosophy, where all pipeline configuration is defined in a single declarative document.
 
-So, to add more workers or web nodes, just change the instances value for the instance group and re-run bosh deploy.
+So, to add more workers or web nodes, just change the `instances` value for the instance group and re-run `bosh deploy`.
 
-To upgrade, just upload the new releases and re-run bosh deploy.
+To upgrade, just upload the new releases and re-run `bosh deploy`.
 
 ### Supporting external workers
 
-If you need workers that run outside of your BOSH managed deployment (e.g. for testing with iOS or in some special network), you'll need to make some tweaks to the default configuration of the tsa job.
+If you need workers that run outside of your BOSH managed deployment (e.g. for testing with iOS or in some special network), you'll need to make some tweaks to the default configuration of the `tsa` job.
 
 The TSA is the entryway for workers to join the cluster. For every new worker key pair, the TSA will be told to authorize its public key, and the workers must also know the TSA's public key ahead of time, so they know who they're connecting to.
 
@@ -154,12 +154,12 @@ The TSA is the entryway for workers to join the cluster. For every new worker ke
 
 First you'll need to remove the "magic" from the default deployment. By default, Concourse generates a key pair for the TSA, and gives the public key to the workers so they can trust the connection. This key occasionally gets cycled, which is fine so long as things are in one deployment, but once you have external workers you would have to update them all manually, which is annoying.
 
-To fix this, generate a passwordless key pair via ssh-keygen, and provide the following properties in your BOSH deployment manifest:
+To fix this, generate a passwordless key pair via `ssh-keygen`, and provide the following properties in your BOSH deployment manifest:
 
-host_key on the tsa job
+`host_key` on the `tsa` job
 the contents of the private key for the TSA server
 
-host_public_key on the tsa job
+`host_public_key` on the `tsa` job
 the public key of the TSA, for the workers to use to verify the connection
 
 For example (note that this manifest omits a bunch of stuff):
@@ -190,20 +190,20 @@ External workers however will need their own private keys, and so the TSA must b
 
 To do so, set the following properties:
 
-authorized_keys on the tsa job
-the array of public keys to authorize
+`authorized_keys` on the `tsa` job
+* the array of public keys to authorize
 
-tsa.private_key on the groundcrew job
-the private key for the worker to use when accessing the TSA
+`tsa.private_key` on the `groundcrew` job
+* the private key for the worker to use when accessing the TSA
 
-tsa.host and tsa.host_public_key on the groundcrew job
-if the worker is in a separate deployment, these must be configured to reach the TSA
+`tsa.host` and `tsa.host_public_key` on the `groundcrew` job
+* if the worker is in a separate deployment, these must be configured to reach the TSA
 
-garden.forward_address on the groundcrew job
-if the worker is in a separate deployment, this must be the locally-reachable Garden address to forward through the TSA; e.g.: 127.0.0.1:7777
+`garden.forward_address` on the `groundcrew` job
+* if the worker is in a separate deployment, this must be the locally-reachable Garden address to forward through the TSA; e.g.: 127.0.0.1:7777
 
 `baggageclaim.forward_address` on the `groundcrew` job
-if the worker is in a separate deployment, this must be the locally-reachable Baggageclaim address to forward through the TSA; e.g.: 127.0.0.1:7788
+* if the worker is in a separate deployment, this must be the locally-reachable Baggageclaim address to forward through the TSA; e.g.: 127.0.0.1:7788
 
 Once again, after setting these properties run `bosh deploy` to make the changes take place.
 
@@ -214,11 +214,11 @@ Typically the TSA and ATC will both be colocated in the same instance group. Thi
 * expose port `443` to `8080` (ATC's HTTP port) via SSL
 * expose port `2222` to `2222` (TSA's SSH port) via TCP
 
-Be sure to update any relevant security group rules (or equivalent in non-AWS environments) to permit both access from the outside world to port `2222` on your load balancer, and access from the load balancer to port 2222 on your TSA + ATC instances.
+Be sure to update any relevant security group rules (or equivalent in non-AWS environments) to permit both access from the outside world to port `2222` on your load balancer, and access from the load balancer to port `2222` on your TSA + ATC instances.
 
 The BOSH deployment manifest would then colocate both jobs together, like so:
 
-```
+``` yaml
 instance_groups:
 - name: web
   vm_type: web_lb

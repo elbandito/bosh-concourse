@@ -122,9 +122,9 @@ update:
   serial: false
   canary_watch_time: 1000-60000
   update_watch_time: 1000-60000
-You may also want to consult the property descriptions for your version of Concourse at bosh.io to see what properties you can/should tweak.
-
 ```
+
+You may also want to consult the property descriptions for your version of Concourse at bosh.io to see what properties you can/should tweak.
 
 You may also want to consult Configuring Auth for configuring something other than basic auth for the main team.
 

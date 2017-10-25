@@ -25,7 +25,7 @@ Next you'll need a Concourse BOSH deployment manifest. An example manifest is be
 
 Note that the VM types, VM extensions, persistent disk type, and network names must come from your Cloud Config. Consult Prepping the Environment if you haven't set it up yet. You can retrieve your Cloud Config by running bosh cloud-config.
 
-```
+``` yaml
 ---
 name: concourse
 
@@ -164,7 +164,7 @@ the public key of the TSA, for the workers to use to verify the connection
 
 For example (note that this manifest omits a bunch of stuff):
 
-```
+``` yml
 instance_groups:
 - name: web
   jobs:
